@@ -1,5 +1,6 @@
 const express = require('express');
 const tourController = require('../controllers/tourController');
+const authController = require('../controllers/authController');
 
 const router = express.Router();
 // //Parameter middleware
@@ -10,7 +11,10 @@ router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 router
   .route('/top-5-cheap')
   .get(tourController.aliasTopTours, tourController.getTours);
-router.route('/').get(tourController.getTours).post(tourController.addTour);
+router
+  .route('/')
+  .get(authController.authorize, tourController.getTours)
+  .post(tourController.addTour);
 router
   .route('/:id')
   .patch(tourController.updateTour)

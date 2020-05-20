@@ -18,6 +18,16 @@ const handleValidationErrorDB = (err) => {
 
   return new AppError(message, 400);
 };
+
+const handleJWTError = () => {
+  const message = `Invalid JWT Token`;
+  return new AppError(message, 401);
+};
+
+const handleJWTExpiredError = () => {
+  const message = `Token Expired. Reloging for new token`;
+  return new AppError(message, 401);
+};
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
@@ -56,6 +66,8 @@ module.exports = (err, req, res, next) => {
     if (error.code === 11000) error = handleDuplicateFieldDB(error);
     if (error.name === 'ValidationError')
       error = handleValidationErrorDB(error);
+    if (error.name === 'JsonWebTokenError') error = handleJWTError();
+    if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
     sendErrorProd(error, res);
   }
 
