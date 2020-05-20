@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Password is mandatory'],
     minlength: 8,
+    select: false,
   },
   passwordConfirm: {
     type: String,
@@ -33,6 +34,7 @@ const userSchema = new mongoose.Schema({
       },
       message: "Password don't match with the confirmation password",
     },
+    select: false,
   },
 });
 
@@ -44,6 +46,14 @@ userSchema.pre('save', async function (next) {
   console.log(this);
   next();
 });
+
+//This method is available in all the user documents returned from the Model
+userSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword
+) {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
 
 const User = mongoose.model('User', userSchema);
 
