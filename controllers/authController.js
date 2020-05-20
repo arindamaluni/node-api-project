@@ -15,6 +15,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
+    passwordChangedAt: req.body.passwordChangedAt,
   };
   console.log(userData);
   const user = await User.create(userData);
@@ -61,9 +62,28 @@ exports.authorize = catchAsync(async (req, res, next) => {
     token,
     process.env.JWT_SECRET
   );
-  console.log(decoded);
+  console.log(decodedJWTPayload);
   //Check if the user still exists in the system
+  const currentUser = await User.findById(decodedJWTPayload.id);
+  if (!currentUser)
+    return next(
+      new AppError(
+        'The user belonging to the token supplied does not exist',
+        401
+      )
+    );
 
   //Check if user has changed password afetr the JWT was issued
+  if (currentUser.isPasswordChangedAfter(decodedJWTPayload.iat)) {
+    return next(
+      new AppError(
+        'Password changed after the token was issued. Relogin required',
+        401
+      )
+    );
+  }
+
+  //Provide access to the authenticated user. Pass the user to next middleware
+  req.user = currentUser;
   next();
 });
