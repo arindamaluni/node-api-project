@@ -24,6 +24,7 @@ const createAndSendToken = (user, statusCode, res, includeUserData = false) => {
   }
   res.status(statusCode).json(jsonResponse);
 };
+
 exports.signup = catchAsync(async (req, res, next) => {
   const userData = {
     name: req.body.name,
@@ -102,7 +103,7 @@ exports.authenticate = catchAsync(async (req, res, next) => {
   next();
 });
 
-//closure for Middleware handler
+//closure for Middleware handler to take parameter input
 exports.authorizeTo = (...roles) => {
   return (req, res, next) => {
     //if the current user role is not includded in the permitted roles, reject

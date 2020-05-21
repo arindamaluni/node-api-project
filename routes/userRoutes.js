@@ -13,7 +13,11 @@ router.patch(
   authController.authenticate,
   authController.updatePassword
 );
-
+router.patch(
+  '/updateMyDetails',
+  authController.authenticate,
+  userController.updateMyDetails
+);
 router
   .route('/')
   .get(userController.getAllUsers)
