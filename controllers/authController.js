@@ -1,8 +1,10 @@
+const crypto = require('crypto');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/AppError');
+const sendMail = require('../utils/email');
 
 const signToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
@@ -39,7 +41,8 @@ exports.login = catchAsync(async (req, res, next) => {
   }
   const token = signToken(user._id);
   res.status(200).json({ status: 'succcess', token });
-  next();
+  //Next(should never be invoked after the response as the call will handle to global errorhandling middleware then)
+  //next();
 });
 
 exports.authenticate = catchAsync(async (req, res, next) => {
@@ -99,3 +102,82 @@ exports.authorizeTo = (...roles) => {
     next();
   };
 };
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  //Get user based on the email posted
+  const { email } = req.body;
+  console.log(email);
+  if (!email) {
+    return next(new AppError(`No email provided`, 400));
+  }
+  const user = await User.findOne({ email: email });
+  if (!user) {
+    return next(new AppError(`No user with emai:${email}`, 401));
+  }
+
+  //Generate random token and save the token has in DB along with expiry
+  const resetToken = user.createPasswordResetToken();
+  console.log(user);
+  const savedUSer = await user.save({ validateBeforeSave: false });
+
+  //Send the token to the useers email
+  const resetURL = `${req.protocol}://${req.get(
+    'host'
+  )}/api/v1/users/resetPassword/${resetToken}`;
+
+  const message =
+    `Forgot your password? an email has been sent with the reset link ${resetURL}. ` +
+    'Submit a PATCH request with the link providing password and confirmPassword';
+
+  try {
+    await sendMail({
+      email: user.email,
+      subject: 'Password reset link (valid for 10 minutes)',
+      message,
+    });
+    res.status(200).json({
+      status: 'success',
+      message:
+        'An email is sent to your email with the token for the password reset',
+    });
+  } catch (err) {
+    console.log(err);
+    //Reset tokens in DB
+    user.passowrdResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    return next(new AppError('Error sending email. Try after some time', 500));
+  }
+});
+exports.resetPassword = catchAsync(async (req, res, next) => {
+  //Get user based on the token
+  console.log(req.params);
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+  console.log({ hashedToken });
+  const currentUser = await User.findOne({
+    passowrdResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+  console.log({ currentUser });
+  if (!currentUser) {
+    return next(
+      new AppError('Invalid or expired token. Try resetting again', 401)
+    );
+  }
+  //if the token is not expired and there is a user set the new password
+  currentUser.password = req.body.password;
+  currentUser.passwordConfirm = req.body.passwordConfirm;
+  currentUser.passowrdResetToken = undefined;
+  currentUser.passwordResetExpires = undefined;
+
+  const user = await currentUser.save(currentUser);
+  console.log(user);
+  //update changedPasswordAt property for the user
+  //done through middleware
+  //log the user in send JWT
+  const token = signToken(user._id);
+  res.status(200).json({ status: 'succcess', token });
+});
