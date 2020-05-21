@@ -16,6 +16,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
     passwordChangedAt: req.body.passwordChangedAt,
+    role: req.body.role, //This needs to be checked
   };
   console.log(userData);
   const user = await User.create(userData);
@@ -41,7 +42,7 @@ exports.login = catchAsync(async (req, res, next) => {
   next();
 });
 
-exports.authorize = catchAsync(async (req, res, next) => {
+exports.authenticate = catchAsync(async (req, res, next) => {
   //Get the token
   let token;
   if (
@@ -87,3 +88,14 @@ exports.authorize = catchAsync(async (req, res, next) => {
   req.user = currentUser;
   next();
 });
+
+//closure for Middleware handler
+exports.authorizeTo = (...roles) => {
+  return (req, res, next) => {
+    //if the current user role is not includded in the permitted roles, reject
+    if (!roles.includes(req.user.role)) {
+      return next(new AppError('Unauthorized access', 401));
+    }
+    next();
+  };
+};

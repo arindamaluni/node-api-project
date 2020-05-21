@@ -13,12 +13,16 @@ router
   .get(tourController.aliasTopTours, tourController.getTours);
 router
   .route('/')
-  .get(authController.authorize, tourController.getTours)
+  .get(authController.authenticate, tourController.getTours)
   .post(tourController.addTour);
 router
   .route('/:id')
   .patch(tourController.updateTour)
-  .delete(tourController.deleteTour)
+  .delete(
+    authController.authenticate,
+    authController.authorizeTo('admin', 'lead-guide'),
+    tourController.deleteTour
+  )
   .get(tourController.getTour);
 
 module.exports = router;
