@@ -45,6 +45,7 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
   passowrdResetToken: String,
   passwordResetExpires: Date,
+  active: { type: Boolean, default: true, select: false },
 });
 
 userSchema.pre('save', async function (next) {
@@ -56,6 +57,13 @@ userSchema.pre('save', async function (next) {
   //Dont set this property for new user creation
   if (!this.isNew) this.passwordChangedAt = Date.now() - 1000; //1000 subtracted to back date the time for issee with JSW token timestam
   console.log(this);
+  next();
+});
+
+//Filter all inactive users from all findXXX()
+//When useres self deregisters thery are marked inacive and should not appear in any search
+userSchema.pre(/^find/, function (next) {
+  this.find({ active: { $ne: false } });
   next();
 });
 

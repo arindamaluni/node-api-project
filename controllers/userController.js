@@ -34,6 +34,14 @@ exports.updateMyDetails = catchAsync(async (req, res, next) => {
   user.passowrd = undefined;
   res.status(200).json({ status: 'success', user });
 });
+
+exports.deregisterSelf = catchAsync(async (req, res, next) => {
+  //Get user after authentication. User obj avl in 'req'
+  const user = await User.findByIdAndUpdate(req.user.id, { active: false });
+  if (!user)
+    return next(new AppError('Internal error. Try after sometime', 500));
+  res.status(200).json({ status: 'success', data: null });
+});
 exports.getUser = (req, res) => {
   res.status(500).json({ status: 'error', message: 'Not Yet implemented' });
 };

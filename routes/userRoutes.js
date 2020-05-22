@@ -18,6 +18,11 @@ router.patch(
   authController.authenticate,
   userController.updateMyDetails
 );
+router.delete(
+  '/deregister',
+  authController.authenticate,
+  userController.deregisterSelf
+);
 router
   .route('/')
   .get(userController.getAllUsers)
