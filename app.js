@@ -4,6 +4,7 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
+const hpp = require('hpp');
 
 const AppError = require('./utils/AppError');
 const globalErrorHandar = require('./controllers/errorController');
@@ -30,6 +31,20 @@ app.use((req, res, next) => {
 app.use(mongoSanitize());
 //Middleware for cross site scripting: removal of malicious html tag based contents in data
 app.use(xss());
+//Parameter pollution. Cleans up the query parameter with duplicate fields e.g sort=duration&sort=price.
+//Whitelist skips the fields from deduplication
+app.use(
+  hpp({
+    whitelist: [
+      'duration',
+      'ratingsAverage',
+      'ratingsQuantity',
+      'maxGroupSize',
+      'difficulty',
+      'price',
+    ],
+  })
+);
 //Express rate limiter
 const noOfAPICalls = 2000;
 const rateLimiter = rateLimit({
