@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 const validator = require('validator');
+const User = require('./userModel');
 
 const tourSchema = new mongoose.Schema(
   {
@@ -41,7 +42,6 @@ const tourSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: [true, 'Price must be defined for a tour'],
-      unique: true,
     },
     priceDiscount: {
       type: Number,
@@ -59,6 +59,32 @@ const tourSchema = new mongoose.Schema(
     createdAt: { type: Date, default: Date.now(), select: false },
     startDates: [Date],
     secretTour: { type: Boolean, default: false },
+    startLocation: {
+      //GeoJSON
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point'],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    locations: [
+      {
+        //GeoJSON
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    guides: Array,
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
@@ -68,12 +94,17 @@ tourSchema.virtual('durationWeeks').get(function () {
 });
 
 // // DOCUMENT middleware. Runs BEFORE .save() and .create() and NOT createMany()
-// tourSchema.pre('save', function (next) {
-//   //Add a new field
-//   this.slug = slugify(this.name, { lower: true });
-//   next();
-// });
-
+tourSchema.pre('save', function (next) {
+  //Add a new field
+  this.slug = slugify(this.name, { lower: true });
+  next();
+});
+//Fetch Users and embed during saving
+tourSchema.pre('save', async function (next) {
+  const guidesPromises = this.guides.map(async (id) => User.findById(id));
+  this.guides = await Promise.all(guidesPromises);
+  next();
+});
 tourSchema.pre('save', function (next) {
   //Add a new field
   console.log(`Going to save document....\n Document: {${this}}`);
