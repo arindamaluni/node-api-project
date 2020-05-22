@@ -14,6 +14,15 @@ const signToken = (userId) => {
 
 const createAndSendToken = (user, statusCode, res, includeUserData = false) => {
   const token = signToken(user._id);
+  //Send jwt cookie
+  const cookieOptons = {
+//     expires: new Date(Number(new Date()) + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+    maxAge: process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+    httpOnly: true,
+  };
+  //Add HTTPS only mode in production
+  if (process.env.NODE_ENV === 'production') cookieOptons.secure = true;
+  res.cookie('jwt', token, cookieOptons);
   const jsonResponse = {
     status: 'success',
     token,
