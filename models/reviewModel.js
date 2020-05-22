@@ -28,12 +28,14 @@ const reviewSchema = new mongoose.Schema(
 reviewSchema.pre(/^find/, function (next) {
   //this refers to the current query
   this.populate({
-    path: 'tour',
-    select: 'name email',
-  }).populate({
     path: 'user',
-    select: 'name ratingsAverage ratingsQuantity images summary',
+    select: '__v',
   });
+  //This is removed as Review is getting populated from Tour with virtual populate
+  // .populate({
+  //   path: 'user',
+  //   select: '__v',
+  // });
   next();
 });
 
