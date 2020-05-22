@@ -1,6 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 
 const AppError = require('./utils/AppError');
 const globalErrorHandar = require('./controllers/errorController');
@@ -11,8 +12,10 @@ const userRouter = require('./routes/userRoutes');
 const app = express();
 
 //MIDDLEWARES
+//Security middleware helmet
+app.use(helmet());
 //A middleware that is convering the body objects to Json and vice versa
-app.use(express.json());
+app.use(express.json({ limit: '50kb' }));
 //This is for demonstartion purpose
 app.use(express.static(`${__dirname}/public`));
 //Custom Middleware
@@ -22,14 +25,14 @@ app.use((req, res, next) => {
   next();
 });
 //Express rate limiter
-const noOfAPICalls = 4;
+const noOfAPICalls = 2000;
 const rateLimiter = rateLimit({
   max: noOfAPICalls,
   windowMs: 1000 * 60 * 60, //1 Hr window
   message: `Too many requests. Limit ${noOfAPICalls} calls in 1 hr`,
 });
 app.use('/api', rateLimiter);
-//Thirdparty Middleware
+//Thirdparty Middleware for logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
