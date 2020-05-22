@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
 
 const AppError = require('./utils/AppError');
 const globalErrorHandar = require('./controllers/errorController');
@@ -20,6 +21,14 @@ app.use((req, res, next) => {
   //console.log(req.headers);
   next();
 });
+//Express rate limiter
+const noOfAPICalls = 4;
+const rateLimiter = rateLimit({
+  max: noOfAPICalls,
+  windowMs: 1000 * 60 * 60, //1 Hr window
+  message: `Too many requests. Limit ${noOfAPICalls} calls in 1 hr`,
+});
+app.use('/api', rateLimiter);
 //Thirdparty Middleware
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));

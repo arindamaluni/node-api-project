@@ -16,7 +16,7 @@ const createAndSendToken = (user, statusCode, res, includeUserData = false) => {
   const token = signToken(user._id);
   //Send jwt cookie
   const cookieOptons = {
-//     expires: new Date(Number(new Date()) + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+    //     expires: new Date(Number(new Date()) + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
     maxAge: process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
     httpOnly: true,
   };
@@ -71,7 +71,7 @@ exports.authenticate = catchAsync(async (req, res, next) => {
   ) {
     token = req.headers.authorization.split(' ')[1];
   }
-  console.log(token);
+  //console.log(token);
   if (!token) {
     return next(
       new AppError('Not logged in. Log in to get a valid token', 401)
@@ -83,7 +83,7 @@ exports.authenticate = catchAsync(async (req, res, next) => {
     token,
     process.env.JWT_SECRET
   );
-  console.log(decodedJWTPayload);
+  //console.log(decodedJWTPayload);
   //Check if the user still exists in the system
   const currentUser = await User.findById(decodedJWTPayload.id).select(
     '+password'
