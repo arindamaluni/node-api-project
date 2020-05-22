@@ -130,6 +130,16 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 
+//Populate the Ref fields
+tourSchema.pre(/^find/, function (next) {
+  //this refers to the current query
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt',
+  });
+  next();
+});
+
 tourSchema.post(/^find/, function (docs, next) {
   console.log(`Query took ${Date.now() - this.start} miliseconds........`);
   next();

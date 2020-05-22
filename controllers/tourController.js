@@ -29,6 +29,12 @@ exports.getTours = catchAsync(async (req, res, next) => {
 
 exports.getTour = catchAsync(async (req, res, next) => {
   //console.log(req.params);
+  //Populate the refrence fields during query with populate()
+  //Moved to Middleware in tourModel
+  // const tour = await Tour.findById(req.params.id).populate({
+  //   path: 'guides',
+  //   select: '-__v -passwordChangedAt',
+  // });
   const tour = await Tour.findById(req.params.id);
   if (!tour) {
     return next(new AppError('Resource not found', 404));
