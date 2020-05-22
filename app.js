@@ -11,6 +11,7 @@ const globalErrorHandar = require('./controllers/errorController');
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const reviewRouter = require('./routes/reviewRoutes');
 
 const app = express();
 
@@ -61,6 +62,7 @@ if (process.env.NODE_ENV === 'development') {
 //Routes
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewRouter);
 
 //Handle  all undefined URL
 app.all('*', (req, res, next) => {
