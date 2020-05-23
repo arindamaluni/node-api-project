@@ -1,7 +1,7 @@
 const express = require('express');
 const tourController = require('../controllers/tourController');
 const authController = require('../controllers/authController');
-const reviewController = require('../controllers/reviewController');
+const reviewrouter = require('./reviewRoutes');
 
 const router = express.Router();
 // //Parameter middleware
@@ -25,12 +25,7 @@ router
     tourController.deleteTour
   )
   .get(tourController.getTour);
-router
-  .route('/:tourId/reviews')
-  .post(
-    authController.authenticate,
-    authController.authorizeTo('user'),
-    reviewController.createReview
-  );
+//Reviews should be handleed by reviewRouter hence redirect
+router.use('/:tourId/reviews', reviewrouter);
 
 module.exports = router;
