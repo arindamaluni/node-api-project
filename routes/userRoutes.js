@@ -27,6 +27,14 @@ router
   .route('/')
   .get(userController.getAllUsers)
   .post(userController.createUser);
+//This need to be before /:id route
+router
+  .route('/me')
+  .get(
+    authController.authenticate,
+    userController.getMydetails,
+    userController.getUser
+  );
 router
   .route('/:id')
   .get(userController.getUser)

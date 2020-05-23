@@ -41,6 +41,14 @@ exports.createUser = (req, res) => {
     .status(500)
     .json({ status: 'error', message: 'Not implemented. Please use /signup' });
 };
+
+exports.getMydetails = (req, res, next) => {
+  //Populate the id from the authenticated user
+  //Middleware to work before getOne generic handler to provide required id
+  req.params.id = req.user.id;
+  next();
+};
+
 //Middleware to check if password change is attempted
 exports.checkPasswordUpdate = (req, res, next) => {
   if (req.body.passowrd || req.body.passwordConfirm)
