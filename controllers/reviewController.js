@@ -5,6 +5,9 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/AppError');
 
 exports.getAllReviews = catchAsync(async (req, res, next) => {
+  //If gettting redirected from tourRouter for all reviews under a given tour
+  //Add the filter for tour
+  if (req.params.tourId) req.query.tour = req.params.tourId;
   const features = new APIFeatures(Review.find(), req.query)
     .filter()
     .sort()
