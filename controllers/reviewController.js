@@ -37,10 +37,9 @@ exports.getReview = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.createReview = catchAsync(async (req, res, next) => {
+exports.setTourIdAndValidateTour = catchAsync(async (req, res, next) => {
   if (!req.body.tour) req.body.tour = req.params.tourId;
   req.body.user = req.user._id;
-  console.log(req.body.tour);
   const tourIsValid = await Tour.exists({ _id: req.body.tour });
   if (!tourIsValid) {
     return next(
@@ -50,16 +49,9 @@ exports.createReview = catchAsync(async (req, res, next) => {
       )
     );
   }
-  const review = await Review.create(req.body);
-  if (!review) {
-    return next(
-      new AppError('Error creating review, try after some time', 500)
-    );
-  }
-  res.status(200).json({
-    status: 'success',
-    data: { review },
-  });
+  next();
 });
 
 exports.deleteReview = factory.deleteOne(Review);
+exports.updateReview = factory.updateOne(Review);
+exports.createReview = factory.createOne(Review);

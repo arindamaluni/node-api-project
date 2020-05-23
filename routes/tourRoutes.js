@@ -15,7 +15,7 @@ router
 router
   .route('/')
   .get(authController.authenticate, tourController.getTours)
-  .post(tourController.addTour);
+  .post(tourController.createTour);
 router
   .route('/:id')
   .patch(tourController.updateTour)

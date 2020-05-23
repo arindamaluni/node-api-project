@@ -49,7 +49,18 @@ exports.getUser = (req, res) => {
 exports.createUser = (req, res) => {
   res.status(500).json({ status: 'error', message: 'Not Yet implemented' });
 };
-exports.updateUser = (req, res) => {
-  res.status(500).json({ status: 'error', message: 'Not Yet implemented' });
+//Middleware to check if password change is attempted
+exports.checkPasswordUpdate = (req, res, next) => {
+  if (req.body.passowrd || req.body.passwordConfirm)
+    return next(
+      new AppError(
+        'Password Update not allowed with this method. use /updatePassword',
+        400
+      )
+    );
+  next();
 };
+//updateOne cannot be used to update password as the underlying update calls findByIdAndUpdate.
+//The password encryption and validation only works for create() and save()
+exports.updateUser = factory.updateOne(User);
 exports.deleteUser = factory.deleteOne(User);
