@@ -6,11 +6,13 @@ const authController = require('../controllers/authController');
 //so the path paramas are availab;e
 const router = express.Router({ mergeParams: true });
 
+//Add Authenticate to all the routers underneath it
+router.use(authController.authenticate);
+////////////AUTHENTICATED ROUTERS//////////////////////////
 router
   .route('/')
-  .get(authController.authenticate, reviewController.getAllReviews)
+  .get(reviewController.getAllReviews)
   .post(
-    authController.authenticate,
     authController.authorizeTo('user'),
     reviewController.setTourIdAndValidateTour,
     reviewController.createReview
@@ -19,7 +21,14 @@ router
 router
   .route('/:id')
   .get(reviewController.getReview)
-  .delete(reviewController.deleteReview)
-  .patch(reviewController.updateReview);
+  .delete(
+    authController.authorizeTo('admin', 'user'),
+    reviewController.deleteReview
+  )
+  .patch(
+    authController.authorizeTo('admin', 'user'),
+    reviewController.updateReview
+  );
+////////////AUTHENTICATED ROUTERS//////////////////////////
 
 module.exports = router;

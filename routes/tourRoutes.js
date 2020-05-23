@@ -14,11 +14,19 @@ router
   .get(tourController.aliasTopTours, tourController.getTours);
 router
   .route('/')
-  .get(authController.authenticate, tourController.getTours)
-  .post(tourController.createTour);
+  .get(tourController.getTours)
+  .post(
+    authController.authenticate,
+    authController.authorizeTo('admin'),
+    tourController.createTour
+  );
 router
   .route('/:id')
-  .patch(tourController.updateTour)
+  .patch(
+    authController.authenticate,
+    authController.authorizeTo('admin'),
+    tourController.updateTour
+  )
   .delete(
     authController.authenticate,
     authController.authorizeTo('admin', 'lead-guide'),
