@@ -2,6 +2,7 @@ const Tour = require('../models/tourModel');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/AppError');
+const factory = require('./handlerFactory');
 
 //Middleware to inject query parameteers for filtering
 exports.aliasTopTours = (req, res, next) => {
@@ -53,13 +54,7 @@ exports.updateTour = catchAsync(async (req, res, next) => {
   res.status(201).json({ status: 'success', data: { tour } });
 });
 
-exports.deleteTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findByIdAndDelete(req.params.id);
-  if (!tour) {
-    return next(new AppError('Resource not found', 404));
-  }
-  res.status(204).json({ status: 'success', data: { tour } });
-});
+exports.deleteTour = factory.deleteOne(Tour);
 
 exports.addTour = catchAsync(async (req, res, next) => {
   const newTour = await Tour.create(req.body);

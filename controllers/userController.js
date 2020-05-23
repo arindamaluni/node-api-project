@@ -1,6 +1,7 @@
 const catchAsync = require('../utils/catchAsync');
 const User = require('../models/userModel');
 const AppError = require('../utils/AppError');
+const factory = require('./handlerFactory');
 
 exports.getAllUsers = catchAsync(async (req, res, next) => {
   const users = await User.find();
@@ -51,6 +52,4 @@ exports.createUser = (req, res) => {
 exports.updateUser = (req, res) => {
   res.status(500).json({ status: 'error', message: 'Not Yet implemented' });
 };
-exports.deleteUser = (req, res) => {
-  res.status(500).json({ status: 'error', message: 'Not Yet implemented' });
-};
+exports.deleteUser = factory.deleteOne(User);

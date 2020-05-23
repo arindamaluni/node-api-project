@@ -3,6 +3,7 @@ const Tour = require('../models/tourModel');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/AppError');
+const factory = require('./handlerFactory');
 
 exports.getAllReviews = catchAsync(async (req, res, next) => {
   //If gettting redirected from tourRouter for all reviews under a given tour
@@ -60,3 +61,5 @@ exports.createReview = catchAsync(async (req, res, next) => {
     data: { review },
   });
 });
+
+exports.deleteReview = factory.deleteOne(Review);
