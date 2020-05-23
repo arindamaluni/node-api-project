@@ -1,4 +1,5 @@
 const Review = require('../models/reviewModel');
+const Tour = require('../models/tourModel');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/AppError');
@@ -33,6 +34,18 @@ exports.getReview = catchAsync(async (req, res, next) => {
 });
 
 exports.createReview = catchAsync(async (req, res, next) => {
+  if (!req.body.tour) req.body.tour = req.params.tourId;
+  req.body.user = req.user._id;
+  console.log(req.body.tour);
+  const tourIsValid = await Tour.exists({ _id: req.body.tour });
+  if (!tourIsValid) {
+    return next(
+      new AppError(
+        'Tour against which the review is getting created does not exist',
+        401
+      )
+    );
+  }
   const review = await Review.create(req.body);
   if (!review) {
     return next(
