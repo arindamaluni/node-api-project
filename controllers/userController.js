@@ -3,14 +3,6 @@ const User = require('../models/userModel');
 const AppError = require('../utils/AppError');
 const factory = require('./handlerFactory');
 
-exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const users = await User.find();
-
-  return res
-    .status(200)
-    .json({ status: 'success', results: users.length, users });
-});
-
 exports.updateMyDetails = catchAsync(async (req, res, next) => {
   //error if the use tries to update password here
   if (req.body.password || req.body.passwordConfirm) {
@@ -43,11 +35,11 @@ exports.deregisterSelf = catchAsync(async (req, res, next) => {
     return next(new AppError('Internal error. Try after sometime', 500));
   res.status(200).json({ status: 'success', data: null });
 });
-exports.getUser = (req, res) => {
-  res.status(500).json({ status: 'error', message: 'Not Yet implemented' });
-};
+
 exports.createUser = (req, res) => {
-  res.status(500).json({ status: 'error', message: 'Not Yet implemented' });
+  res
+    .status(500)
+    .json({ status: 'error', message: 'Not implemented. Please use /signup' });
 };
 //Middleware to check if password change is attempted
 exports.checkPasswordUpdate = (req, res, next) => {
@@ -64,3 +56,5 @@ exports.checkPasswordUpdate = (req, res, next) => {
 //The password encryption and validation only works for create() and save()
 exports.updateUser = factory.updateOne(User);
 exports.deleteUser = factory.deleteOne(User);
+exports.getUser = factory.getOne(User);
+exports.getAllUsers = factory.getAll(User);
