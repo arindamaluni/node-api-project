@@ -24,7 +24,8 @@ const reviewSchema = new mongoose.Schema(
   },
   { toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
-
+// Unique index - restricts 1 review for 1 user for a given tour
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
 //Populate the Ref fields
 reviewSchema.pre(/^find/, function (next) {
   //this refers to the current query
