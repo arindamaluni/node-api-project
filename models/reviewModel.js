@@ -57,11 +57,19 @@ reviewSchema.statics.calcAverageRating = async function (tourId) {
     },
   ]);
   //stats retuns an array with the stats
+  //error handling for deletion of last review
   console.log(stats);
-  await Tour.findByIdAndUpdate(tourId, {
-    ratingsQuantity: stats[0].nRating,
-    ratingsAverage: stats[0].avgRating,
-  });
+  if (stats.length > 0) {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsQuantity: stats[0].nRating,
+      ratingsAverage: stats[0].avgRating,
+    });
+  } else {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsQuantity: 0,
+      ratingsAverage: 4.5,
+    });
+  }
 };
 //Use a middleware post saving a review to calculate the ratingsAverage and ratingCounts
 //post middleware does not have access to next()
@@ -71,6 +79,26 @@ reviewSchema.post('save', function (next) {
   //Hence can be used to invoke the static method
   this.constructor.calcAverageRating(this.tour);
   //next();
+});
+//findByIdAndUpdate and findByIdAndDelete invokes findOneAndUpdate & findOneAndDelete respectivelly
+//This middleware does not have access to Document/Model can access only the query
+
+reviewSchema.pre(/^findOneAnd/, async function (next) {
+  //with findOne() the query is executed and it fetches the review object that is going to be updated/deleted
+  //this gives access to the tourId
+  //post middleware cannot be used to fetch the object being saved as the query has been executed by then
+  //Now save the review object so that it can be accessed from post middleware
+  //saved in the query itself
+  this.r = await this.findOne();
+  next();
+});
+
+reviewSchema.pre(/^findOneAnd/, async function () {
+  //The static method cannot be accessed from 'this' which is a query
+  //it can be accessed agaianst the constructutor of the document 'r' (review) which is saved in the pre middleware
+  if (!this.r) return;
+  this.r.constructor.calcAverageRating(this.r.tour);
+  //console.log('averageRating and count updated for the updated review');
 });
 
 const Review = mongoose.model('Review', reviewSchema);
