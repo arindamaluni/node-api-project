@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Tour = require('./tourModel');
 
 //review, rating, createdAt, tour, User
 const reviewSchema = new mongoose.Schema(
@@ -37,6 +38,39 @@ reviewSchema.pre(/^find/, function (next) {
   //   select: '__v',
   // });
   next();
+});
+//Calculate avarage rating and noOfReviews updated on every new review creation
+reviewSchema.statics.calcAverageRating = async function (tourId) {
+  //For static methods 'this' gives refernce to Model
+  //and not document and can be invoked directly on the model
+  const stats = await this.aggregate([
+    //match stage - refers the field 'tour' in schema and matches with the tourId passed
+    {
+      $match: { tour: tourId },
+    },
+    {
+      $group: {
+        _id: '$tour',
+        nRating: { $sum: 1 }, //Count number of rating per group
+        avgRating: { $avg: '$rating' },
+      },
+    },
+  ]);
+  //stats retuns an array with the stats
+  console.log(stats);
+  await Tour.findByIdAndUpdate(tourId, {
+    ratingsQuantity: stats[0].nRating,
+    ratingsAverage: stats[0].avgRating,
+  });
+};
+//Use a middleware post saving a review to calculate the ratingsAverage and ratingCounts
+//post middleware does not have access to next()
+reviewSchema.post('save', function (next) {
+  //This is not static method and 'this points to a review document'
+  //this.constructor points to the creator, the Model that created the instance.
+  //Hence can be used to invoke the static method
+  this.constructor.calcAverageRating(this.tour);
+  //next();
 });
 
 const Review = mongoose.model('Review', reviewSchema);
