@@ -11,6 +11,31 @@ exports.aliasTopTours = (req, res, next) => {
   next();
 };
 
+//'/tours-within/:distance/centre/:latlng/unit/:unit'
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  if (!distance || !unit)
+    return new AppError('distance or unit is not specified', 401);
+  const [lat, lng] = latlng.split(',');
+  if (!lat || !lng) {
+    return next(
+      new AppError(
+        'lattitude or longitude not specified. its a comma seperated set e.g -40.45674,30.64321',
+        401
+      )
+    );
+  }
+  //calculae distance in radians based on unit
+  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+  console.log(lat, lng, distance, unit);
+  const tours = await Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+  });
+  res
+    .status(200)
+    .json({ status: 'success', count: tours.length, data: { tours } });
+});
+
 exports.getTour = factory.getOne(Tour, { path: 'reviews', select: '-__v' });
 exports.updateTour = factory.updateOne(Tour);
 exports.deleteTour = factory.deleteOne(Tour);

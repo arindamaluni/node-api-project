@@ -92,6 +92,8 @@ const tourSchema = new mongoose.Schema(
 //Ceate an index on price(ascending order)
 tourSchema.index({ slug: 1 });
 tourSchema.index({ price: 1, ratingsAverage: -1 });
+//Geospatial index
+tourSchema.index({ startLocation: '2dsphere' });
 // Declare virtual properties in the schema
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
