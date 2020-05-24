@@ -156,14 +156,15 @@ tourSchema.post(/^find/, function (docs, next) {
   next();
 });
 
-//Aggregate Middleware
-tourSchema.pre('aggregate', function (next) {
-  this.pipeline().unshift({
-    $match: { secretTour: { $ne: true } },
-  });
-  console.log(this.pipeline());
-  next();
-});
+// don't include the $match if $geoNear is avl - Commented for now
+// //Aggregate Middleware
+// tourSchema.pre('aggregate', function (next) {
+//   this.pipeline().unshift({
+//     $match: { secretTour: { $ne: true } },
+//   });
+//   console.log(this.pipeline());
+//   next();
+// });
 const Tour = mongoose.model('Tour', tourSchema);
 
 module.exports = Tour;

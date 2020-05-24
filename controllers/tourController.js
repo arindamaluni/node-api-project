@@ -36,6 +36,38 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
     .json({ status: 'success', count: tours.length, data: { tours } });
 });
 
+exports.getDistances = catchAsync(async (req, res, next) => {
+  let { latlng, unit } = req.params;
+  unit = !unit ? 'mi' : unit;
+  const [lat, lng] = latlng.split(',');
+  if (!lat || !lng) {
+    return next(
+      new AppError(
+        'lattitude or longitude not specified. its a comma seperated set e.g -40.45674,30.64321',
+        401
+      )
+    );
+  }
+  const distMultiplier = unit === 'mi' ? 0.000621371 : 0.001;
+  const distances = await Tour.aggregate([
+    //This need to be first in the pipelinr for any Geospatial aggregation
+    //At least one geospatial indexed field is required
+    //if there are multiple keys parameter must be specified
+    {
+      $geoNear: {
+        near: { type: 'Point', coordinates: [lng * 1, lat * 1] },
+        distanceField: 'distance',
+        distanceMultiplier: distMultiplier,
+      },
+    },
+    {
+      $project: { distance: 1, name: 1 },
+    },
+  ]);
+  res
+    .status(200)
+    .json({ status: 'success', count: distances.length, data: { distances } });
+});
 exports.getTour = factory.getOne(Tour, { path: 'reviews', select: '-__v' });
 exports.updateTour = factory.updateOne(Tour);
 exports.deleteTour = factory.deleteOne(Tour);
