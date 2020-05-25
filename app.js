@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
@@ -20,8 +21,6 @@ const app = express();
 app.use(helmet());
 //A middleware that is convering the body objects to Json and vice versa
 app.use(express.json({ limit: '50kb' }));
-//This is for demonstartion purpose
-app.use(express.static(`${__dirname}/public`));
 //Custom Middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
@@ -59,7 +58,19 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
+//VIEW ENGINE SETTINGS
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+
+//make the public directory avl for serving static file
+app.use(express.static(path.join(__dirname, 'public')));
 //Routes
+//templated site pages
+app.get('/', (req, res) => {
+  res.status(200).render('base', { tourName: 'Some Name' });
+});
+
+//API routes
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
