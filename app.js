@@ -13,6 +13,7 @@ const globalErrorHandar = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
+const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
 
@@ -66,9 +67,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 //Routes
 //templated site pages
-app.get('/', (req, res) => {
-  res.status(200).render('base', { tourName: 'Some Name' });
-});
+app.use('/', viewRouter);
 
 //API routes
 app.use('/api/v1/tours', tourRouter);
