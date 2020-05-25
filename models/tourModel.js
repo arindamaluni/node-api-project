@@ -57,6 +57,7 @@ const tourSchema = new mongoose.Schema(
     summary: { type: String, trim: true },
     description: { type: String, trim: true },
     images: [String],
+    imageCover: { type: String, trim: true },
     createdAt: { type: Date, default: Date.now(), select: false },
     startDates: [Date],
     secretTour: { type: Boolean, default: false },
