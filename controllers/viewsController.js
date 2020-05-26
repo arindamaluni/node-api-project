@@ -11,5 +11,5 @@ exports.getTourDetails = catchAsync(async (req, res) => {
     path: 'reviews',
     fields: 'review rating user',
   });
-  res.status(200).render('tour', { title: 'The Forest Hiker', tour });
+  res.status(200).render('tour', { title: `${tour.name} Tour`, tour });
 });
