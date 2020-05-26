@@ -113,6 +113,34 @@ exports.authenticate = catchAsync(async (req, res, next) => {
   req.user = currentUser;
   next();
 });
+//Middleware only for rendered pages - Pug template views
+exports.isLoggedIn = catchAsync(async (req, res, next) => {
+  if (req.cookies.jwt) {
+    //Verify token
+    //Promisify a callback method and await for the result without blocking
+    const decodedJWTPayload = await promisify(jwt.verify)(
+      req.cookies.jwt,
+      process.env.JWT_SECRET
+    );
+    //console.log(decodedJWTPayload);
+    //Check if the user still exists in the system
+    const currentUser = await User.findById(decodedJWTPayload.id).select(
+      '+password'
+    );
+
+    if (!currentUser) return next();
+
+    //Check if user has changed password afetr the JWT was issued
+    if (currentUser.isPasswordChangedAfter(decodedJWTPayload.iat)) {
+      return next();
+    }
+
+    //There is a logged in user - make the user object accessible in pug templates
+    //res.locals is a predefined object accessible from all pug templates
+    res.locals.user = currentUser;
+  }
+  return next();
+});
 
 //closure for Middleware handler to take parameter input
 exports.authorizeTo = (...roles) => {
