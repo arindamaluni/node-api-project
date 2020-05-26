@@ -31,7 +31,7 @@ reviewSchema.pre(/^find/, function (next) {
   //this refers to the current query
   this.populate({
     path: 'user',
-    select: '__v',
+    select: 'name photo',
   });
   //This is removed as Review is getting populated from Tour with virtual populate
   // .populate({
