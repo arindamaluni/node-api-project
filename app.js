@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const cookieParser = require('cookie-parser');
 
 const AppError = require('./utils/AppError');
 const globalErrorHandar = require('./controllers/errorController');
@@ -22,10 +23,12 @@ const app = express();
 app.use(helmet());
 //A middleware that is convering the body objects to Json and vice versa
 app.use(express.json({ limit: '50kb' }));
+//Parse cookie from the request
+app.use(cookieParser());
 //Custom Middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
-  //console.log(req.headers);
+  console.log(req.cookies);
   next();
 });
 //Mongo sannitizer: removes $ and other charatcers with special query character operators
